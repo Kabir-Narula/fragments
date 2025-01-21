@@ -2,6 +2,8 @@ const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
 const compression = require('compression');
+const passport = require('passport'); // Add Passport for authentication
+const authenticate = require('./auth'); // Import authentication module
 
 // author and version from our package.json file
 const logger = require('./logger');
@@ -24,6 +26,10 @@ app.use(cors());
 
 // Use gzip/deflate compression middleware
 app.use(compression());
+
+// Initialize Passport for authentication
+passport.use(authenticate.strategy());
+app.use(passport.initialize());
 
 // Use modularized routes
 app.use('/', require('./routes'));
