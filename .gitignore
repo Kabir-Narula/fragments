@@ -20,7 +20,7 @@ pids
 lib-cov
 
 # Coverage directory used by tools like istanbul
-coverage
+coverage/
 *.lcov
 
 # nyc test coverage
@@ -78,6 +78,10 @@ web_modules/
 .env.test.local
 .env.production.local
 .env.local
+
+# Exclude specific environment files
+!env.jest
+!tests/.htpasswd
 
 # parcel-bundler cache (https://parceljs.org/)
 .cache

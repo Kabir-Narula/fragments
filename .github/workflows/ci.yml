@@ -1,10 +1,7 @@
 # .github/workflows/ci.yml
 
-# Continuous Integration (CI) Workflow
-name: ci
+name: CI Workflow
 
-# This workflow will run whenever we push commits to the `main` branch, or
-# whenever there's a pull request to the `main` branch.
 on:
   pull_request:
     branches:
@@ -15,27 +12,37 @@ on:
 
 jobs:
   lint:
-    # Give your job a name that will show up in the GitHub Actions web UI
     name: ESLint
-    # We'll run this on a Linux (Ubuntu) VM, since we'll deploy on Linux too.
     runs-on: ubuntu-latest
-    # We run these steps one after the other, and if any fail, we stop the process
     steps:
-      # Check out the repository code
       - name: Check out code
         uses: actions/checkout@v4
 
-      # Setup Node.js environment
       - name: Setup node
         uses: actions/setup-node@v4
         with:
           node-version: 'lts/*'
           cache: 'npm'
 
-      # Install dependencies
       - name: Install node dependencies
         run: npm ci
 
-      # Run ESLint
       - name: Run ESLint
         run: npm run lint
+
+  unit-tests:
+    name: Unit Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+
+      - name: Setup node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 'lts/*'
+          cache: 'npm'
+
+      - name: Install node dependencies and run Tests
+        # Install dependencies and run unit tests in one step
+        run: npm install-ci-test
