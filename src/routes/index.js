@@ -1,14 +1,14 @@
 const express = require('express');
 const { version, author } = require('../../package.json');
-const { authenticate } = require('../auth'); // Import the authentication middleware
-const { createSuccessResponse } = require('../response'); // Import response utility functions
+const { authenticate } = require('../auth');
+const { createSuccessResponse } = require('../response');
 
 const router = express.Router();
 
-// Protect all /v1 routes with authentication
+// All /v1 routes require authentication
 router.use('/v1', authenticate(), require('./api'));
 
-// Define a simple health check route
+// Health check
 router.get('/', (req, res) => {
   res.setHeader('Cache-Control', 'no-cache');
   res.status(200).json(
