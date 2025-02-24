@@ -1,0 +1,13 @@
+.git/
+.github/
+.vscode/
+coverage/
+node_modules/
+.env
+*.log
+*.md
+*.lock
+dist/
+.DS_Store
+tests/
+!tests/.htpasswd
