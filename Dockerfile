@@ -3,7 +3,7 @@
 FROM node:18.13.0
 
 # Metadata about the image
-LABEL maintainer="Your Name <your-email@example.com>"
+LABEL maintainer="Kabir Narula"
 LABEL description="Fragments node.js microservice"
 
 # Environment variables
@@ -11,17 +11,17 @@ ENV PORT=8080
 ENV NPM_CONFIG_LOGLEVEL=warn
 ENV NPM_CONFIG_COLOR=false
 
-# Set working directory
+# Stage 1: Build dependencies
+FROM node:18 AS builder
 WORKDIR /app
-
-# Copy package files and install dependencies
 COPY package*.json ./
 RUN npm install
 
-# Copy source code and necessary files
+# Stage 2: Production image
+FROM node:18-alpine
+WORKDIR /app
+COPY --from=builder /app/node_modules ./node_modules
 COPY ./src ./src
 COPY ./tests/.htpasswd ./tests/.htpasswd
-
-# Expose port and start command
 EXPOSE 8080
 CMD ["npm", "start"]
