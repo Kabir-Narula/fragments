@@ -1,0 +1,50 @@
+# Continuous Delivery Workflow
+# This will trigger whenever a new tag is pushed (e.g., v1.0.0)
+
+name: cd
+
+on:
+  push:
+    # Trigger the workflow for tags starting with 'v'
+    tags:
+      - 'v**'  # For example: v1.0.0, v1.0.1, etc.
+
+jobs:
+  aws:
+    name: AWS
+    runs-on: ubuntu-latest
+    steps:
+      
+      # Step 1: Checkout code from GitHub
+      - name: Check out code
+        uses: actions/checkout@v4
+
+      # Step 2: Set up Docker Buildx for optimized Docker builds
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      # Step 3: Configure AWS credentials using GitHub Secrets
+      - name: Configure AWS Credentials using Secrets
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
+          aws-region: us-east-1  # Replace with your region if different
+
+      # Step 4: Login to Amazon ECR (Elastic Container Registry)
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      # Step 5: Build and Push Docker image to Amazon ECR
+      - name: Build and push to Amazon ECR
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}  # Get ECR Registry URI
+          ECR_REPO: fragments  # Replace with your ECR repository name
+          VERSION_TAG: ${{ github.ref_name }}  # Git tag name (e.g., v1.0.0)
+        uses: docker/build-push-action@v6
+        with:
+          push: true
+          # Use both git tag and latest
+          tags: ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPO }}:${{ env.VERSION_TAG }}, ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPO }}:latest
