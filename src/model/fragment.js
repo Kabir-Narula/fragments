@@ -8,7 +8,7 @@ const {
   listFragments,
   deleteFragment,
 } = require('./data');
-const logger = require('../logger')
+const logger = require('../logger');
 
 class Fragment {
   constructor({ id, ownerId, created, updated, type, size = 0 }) {
@@ -87,7 +87,7 @@ class Fragment {
       const { type } = contentType.parse(value);
       return validTypes.includes(type);
     } catch (err) {
-      logger.error(err)
+      logger.error(err);
       return false;
     }
   }
