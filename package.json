@@ -1,7 +1,7 @@
 {
   "name": "fragments",
   "private": true,
-  "version": "0.0.1",
+  "version": "0.7.0",
   "description": "Fragments back-end API",
   "scripts": {
     "test": "jest -c jest.config.js --runInBand --",
@@ -13,7 +13,9 @@
     "debug": "LOG_LEVEL=debug nodemon --inspect=0.0.0.0:9229 ./src/index.js --watch src"
   },
   "jest": {
-    "setupFilesAfterEnv": ["./tests/setup.js"],
+    "setupFilesAfterEnv": [
+      "./tests/setup.js"
+    ],
     "testEnvironment": "node"
   },
   "repository": {
