@@ -21,6 +21,7 @@ RUN npm install
 FROM node:18-alpine
 WORKDIR /app
 COPY --from=builder /app/node_modules ./node_modules
+COPY package*.json ./
 COPY ./src ./src
 COPY ./tests/.htpasswd ./tests/.htpasswd
 EXPOSE 8080
