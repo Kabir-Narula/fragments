@@ -6,17 +6,8 @@ const wait = async (ms = 50) => new Promise((resolve) => setTimeout(resolve, ms)
 
 const validTypes = [
   `text/plain`,
-  /*
-   Currently, only text/plain is supported. Others will be added later.
-
   `text/markdown`,
-  `text/html`,
   `application/json`,
-  `image/png`,
-  `image/jpeg`,
-  `image/webp`,
-  `image/gif`,
-  */
 ];
 
 describe('Fragment class', () => {
@@ -121,6 +112,8 @@ describe('Fragment class', () => {
     test('common text types are supported, with and without charset', () => {
       expect(Fragment.isSupportedType('text/plain')).toBe(true);
       expect(Fragment.isSupportedType('text/plain; charset=utf-8')).toBe(true);
+      expect(Fragment.isSupportedType('text/markdown')).toBe(true);
+      expect(Fragment.isSupportedType('application/json')).toBe(true);
     });
 
     test('other types are not supported', () => {
@@ -166,7 +159,21 @@ describe('Fragment class', () => {
         type: 'text/plain; charset=utf-8',
         size: 0,
       });
-      expect(fragment.formats).toEqual(['text/plain']);
+      expect(fragment.formats).toEqual(['text/plain', 'text/markdown', 'text/html', 'application/json']);
+    });
+  });
+
+  describe('convertData()', () => {
+    test('converts Markdown to HTML', async () => {
+      const markdown = '# Hello, World!';
+      const html = await Fragment.convertData(Buffer.from(markdown), 'text/markdown', 'text/html');
+      expect(html).toMatch('<h1>Hello, World!</h1>');
+    });
+
+    test('throws error for unsupported conversions', async () => {
+      await expect(
+        Fragment.convertData(Buffer.from('plain text'), 'text/plain', 'text/html')
+      ).rejects.toThrow('Unsupported conversion');
     });
   });
 

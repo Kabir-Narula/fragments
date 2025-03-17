@@ -79,7 +79,7 @@ class Fragment {
   }
 
   get formats() {
-    return ['text/plain'];
+    return ['text/plain', 'text/markdown', 'text/html', 'application/json'];
   }
 
   static isSupportedType(value) {
@@ -91,11 +91,21 @@ class Fragment {
       return false;
     }
   }
+
+  static async convertData(data, fromType, toType) {
+    if (fromType === 'text/markdown' && toType === 'text/html') {
+      const markdownIt = require('markdown-it')();
+      return markdownIt.render(data.toString());
+    }
+    throw new Error('Unsupported conversion');
+  }
 }
 
 const validTypes = [
   'text/plain',
-  // Add other types here when supported
+  'text/markdown',
+  'application/json',
+  'charset=uft-8'
 ];
 
 module.exports.Fragment = Fragment;

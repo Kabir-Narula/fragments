@@ -2,7 +2,6 @@ const request = require('supertest');
 const app = require('../../src/app');
 
 describe('POST /v1/fragments', () => {
-  // Test authentication
   test('unauthenticated requests are denied', async () => {
     const res = await request(app).post('/v1/fragments');
     expect(res.statusCode).toBe(401);
@@ -24,7 +23,59 @@ describe('POST /v1/fragments', () => {
       size: Buffer.byteLength(text), // 11 bytes
     });
   });
-  // tests/unit/post.test.js
+
+  test('authenticated users can create text/markdown fragments', async () => {
+    const markdown = '# Hello, World!';
+    const res = await request(app)
+      .post('/v1/fragments')
+      .auth('user1@email.com', 'password1')
+      .set('Content-Type', 'text/markdown')
+      .send(markdown);
+
+    expect(res.statusCode).toBe(201);
+    expect(res.body.fragment).toMatchObject({
+      id: expect.any(String),
+      type: 'text/markdown',
+      size: Buffer.byteLength(markdown),
+    });
+  });
+
+  test('authenticated users can create application/json fragments', async () => {
+    const json = JSON.stringify({ key: 'value' });
+    const res = await request(app)
+      .post('/v1/fragments')
+      .auth('user1@email.com', 'password1')
+      .set('Content-Type', 'application/json')
+      .send(json);
+
+    expect(res.statusCode).toBe(201);
+    expect(res.body.fragment).toMatchObject({
+      id: expect.any(String),
+      type: 'application/json',
+      size: Buffer.byteLength(json),
+    });
+  });
+
+  test('invalid Content-Type returns 415', async () => {
+    const res = await request(app)
+      .post('/v1/fragments')
+      .auth('user1@email.com', 'password1')
+      .set('Content-Type', 'invalid/type')
+      .send('content');
+
+    expect(res.statusCode).toBe(415);
+  });
+
+  test('empty body returns 400', async () => {
+    const res = await request(app)
+      .post('/v1/fragments')
+      .auth('user1@email.com', 'password1')
+      .set('Content-Type', 'text/plain')
+      .send('');
+
+    expect(res.statusCode).toBe(400);
+  });
+
   describe('Location header', () => {
     test('uses API_URL environment variable', async () => {
       process.env.API_URL = 'https://api.example.com';
@@ -56,6 +107,7 @@ describe('POST /v1/fragments', () => {
       );
     });
   });
+
   test('supports charset in Content-Type', async () => {
     const res = await request(app)
       .post('/v1/fragments')
@@ -63,24 +115,5 @@ describe('POST /v1/fragments', () => {
       .set('Content-Type', 'text/plain; charset=utf-8')
       .send('content');
     expect(res.statusCode).toBe(201);
-  });
-  test('invalid Content-Type returns 415', async () => {
-    const res = await request(app)
-      .post('/v1/fragments')
-      .auth('user1@email.com', 'password1')
-      .set('Content-Type', 'invalid/type')
-      .send('content');
-
-    expect(res.statusCode).toBe(415);
-  });
-
-  test('empty body returns 400', async () => {
-    const res = await request(app)
-      .post('/v1/fragments')
-      .auth('user1@email.com', 'password1')
-      .set('Content-Type', 'text/plain')
-      .send('');
-
-    expect(res.statusCode).toBe(400);
   });
 });
