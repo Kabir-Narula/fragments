@@ -1,5 +1,5 @@
 const { Fragment } = require('../../model/fragment');
-const { createSuccessResponse, createErrorResponse } = require('../../response');
+const {createErrorResponse } = require('../../response');
 
 module.exports = async (req, res) => {
   try {

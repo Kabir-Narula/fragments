@@ -1,5 +1,6 @@
 const { randomUUID } = require('crypto');
 const contentType = require('content-type');
+const markdownIt = require('markdown-it'); // Import markdown-it for Markdown to HTML conversion
 const {
   readFragment,
   writeFragment,
@@ -92,10 +93,11 @@ class Fragment {
     }
   }
 
+  // The conversion logic based on supported MIME types
   static async convertData(data, fromType, toType) {
     if (fromType === 'text/markdown' && toType === 'text/html') {
-      const markdownIt = require('markdown-it')();
-      return markdownIt.render(data.toString());
+      const md = markdownIt();
+      return md.render(data.toString());
     }
     throw new Error('Unsupported conversion');
   }
@@ -105,7 +107,6 @@ const validTypes = [
   'text/plain',
   'text/markdown',
   'application/json',
-  'charset=uft-8'
 ];
 
 module.exports.Fragment = Fragment;

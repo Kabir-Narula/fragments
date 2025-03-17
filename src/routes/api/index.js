@@ -20,19 +20,11 @@ const rawBody = () =>
     },
   });
 
-// GET /v1/fragments
-router.get('/fragments', require('./get'));
-
-// POST /v1/fragments
-router.post('/fragments', rawBody(), require('./post'));
-
-// GET /v1/fragments/:id
-router.get('/fragments/:id', require('./getById'));
-
-// GET /v1/fragments/:id/info
-router.get('/fragments/:id/info', require('./getInfo'));
-
-// GET /v1/fragments/:id.:ext
-router.get('/fragments/:id.:ext', require('./getConverted'));
+// Reference the single get.js handler that now handles all the routes
+router.get('/fragments', require('./get')); // Handles /fragments
+router.post('/fragments', rawBody(), require('./post')); // Handles /fragments POST
+router.get('/fragments/:id', require('./get')); // Handles /fragments/:id
+router.get('/fragments/:id/info', require('./get')); // Handles /fragments/:id/info
+router.get('/fragments/:id.:ext', require('./get')); // Handles /fragments/:id.ext (Markdown to HTML conversion)
 
 module.exports = router;
