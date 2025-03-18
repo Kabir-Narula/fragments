@@ -5,8 +5,11 @@ const markdownIt = require('markdown-it');  // Import markdown-it for converting
 
 module.exports = async (req, res) => {
   try {
-    // Handle GET /fragments (4.3)
-    if (req.originalUrl === '/v1/fragments') {
+    const url = req.originalUrl.split('?')[0];  // Remove query string from URL
+    // Handle GET
+    //  /fragments (4.3)
+    logger.debug({ originalUrl: req.originalUrl }, 'Handling GET request');
+    if (url === '/v1/fragments') {
       const expand = req.query.expand === '1';
       const fragments = await Fragment.byUser(req.user, expand);
 
