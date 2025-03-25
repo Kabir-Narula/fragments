@@ -1,28 +1,40 @@
 // src/auth/basic-auth.js
-
-// Configure HTTP Basic Auth strategy for Passport, see:
-// https://github.com/http-auth/http-auth-passport
-
 const auth = require('http-auth');
 const authPassport = require('http-auth-passport');
 const logger = require('../logger');
 const authorize = require('./auth-middleware');
 
-// We expect HTPASSWD_FILE to be defined.
 if (!process.env.HTPASSWD_FILE) {
   throw new Error('missing expected env var: HTPASSWD_FILE');
 }
 
-// Log that we're using Basic Auth
 logger.info('Using HTTP Basic Auth for auth');
 
-module.exports.strategy = () =>
-  // For our Passport authentication strategy, we'll look for a
-  // username/password pair in the Authorization header.
-  authPassport(
-    auth.basic({
-      file: process.env.HTPASSWD_FILE,
-    })
-  );
+// Modified configuration with explicit challenge
+const basicAuth = auth.basic({
+  file: process.env.HTPASSWD_FILE,
+  challenge: true,  // THIS IS CRUCIAL FOR THE HEADER
+  realm: 'Fragments API',  // Custom realm name
+  unauthorizedResponse: {
+    status: 'error',
+    error: {
+      code: 401,
+      message: 'Unauthorized'
+    }
+  }
+});
 
-  module.exports.authenticate = () => authorize('http');
+module.exports.strategy = () => authPassport(basicAuth);
+
+// Modified authenticate middleware
+module.exports.authenticate = () => {
+  return (req, res, next) => {
+    // Manually set WWW-Authenticate header if not present
+    if (!res.get('WWW-Authenticate')) {
+      res.set('WWW-Authenticate', 'Basic realm="Fragments API"');
+    }
+    
+    // Apply the authorization
+    authorize('http')(req, res, next);
+  };
+};

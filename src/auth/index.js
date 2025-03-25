@@ -1,3 +1,28 @@
+// auth/index.js - Updated Version
+
+// New implementation - prioritizes Basic Auth if HTPASSWD_FILE exists
+if (process.env.HTPASSWD_FILE) {
+  const path = require('path');
+  const fs = require('fs');
+  const htpasswdPath = path.resolve(process.env.HTPASSWD_FILE);
+
+  if (!fs.existsSync(htpasswdPath)) {
+    throw new Error(`HTPASSWD file not found at ${htpasswdPath}`);
+  }
+
+  console.log('Using Basic Auth with file:', htpasswdPath);
+  module.exports = require('./basic-auth');
+} 
+// Fallback to Cognito if configured
+else if (process.env.AWS_COGNITO_POOL_ID && process.env.AWS_COGNITO_CLIENT_ID) {
+  console.log('Using Cognito Auth');
+  module.exports = require('./cognito');
+} 
+else {
+  throw new Error('Missing authentication configuration');
+}
+
+/* OLD IMPLEMENTATION (commented out)
 // Fix NODE_ENV typo and test handling
 if (
   process.env.AWS_COGNITO_POOL_ID &&
@@ -14,3 +39,4 @@ if (process.env.AWS_COGNITO_POOL_ID && process.env.AWS_COGNITO_CLIENT_ID) {
 } else {
   throw new Error('Missing authentication configuration');
 }
+*/
