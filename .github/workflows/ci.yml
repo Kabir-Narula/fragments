@@ -1,89 +1,78 @@
-name: CI Workflow
+# Continuous Delivery Workflow
+# This workflow triggers when a new Git tag (e.g., v1.0.0) is pushed.
+
+name: cd
 
 on:
-  pull_request:
-    branches:
-      - main
   push:
-    branches:
-      - main
+    tags:
+      - 'v**'  # Match version tags like v1.0.0, v1.1.2, etc.
 
 jobs:
-  lint:
-    name: ESLint
+  aws:
+    name: AWS Deployment
     runs-on: ubuntu-latest
     steps:
+
+      # Step 1: Check out code from GitHub
       - name: Check out code
         uses: actions/checkout@v4
 
-      - name: Setup node
-        uses: actions/setup-node@v4
-        with:
-          node-version: 'lts/*'
-          cache: 'npm'
-
-      - name: Install node dependencies
-        run: npm install  
-
-      - name: Run ESLint
-        run: npm run lint
-  
-  # Lint our Dockerfile using Hadolint
-  dockerfile-lint:
-    name: Dockerfile Lint
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: hadolint/hadolint-action@v3.1.0
-        with:
-          dockerfile: Dockerfile
-
-  unit-tests:
-    name: Unit Tests
-    runs-on: ubuntu-latest
-    steps:
-      - name: Check out code
-        uses: actions/checkout@v4
-
-      - name: Setup node
-        uses: actions/setup-node@v4
-        with:
-          node-version: 'lts/*'
-          cache: 'npm'
-
-      - name: Install node dependencies and run Tests
-        # Install dependencies and run unit tests in one step
-        run: npm install-ci-test
-
-  # New job to build and push Docker image to Docker Hub
-  docker-hub:
-    name: Build and Push to Docker Hub
-    # Don't bother running this job unless the other three all pass
-    needs: [lint, dockerfile-lint, unit-tests]
-    runs-on: ubuntu-latest
-    steps:
-      # Set up buildx for optimal Docker Builds
+      # Step 2: Set up Docker Buildx for optimized builds
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      # Login to Docker Hub using GitHub secrets
-      - name: Login to DockerHub
-        uses: docker/login-action@v3
+      # Step 3: Configure AWS credentials using GitHub Secrets
+      - name: Configure AWS Credentials using Secrets
+        uses: aws-actions/configure-aws-credentials@v4
         with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
+          aws-region: us-east-1  # Change if your AWS region is different
 
-      # Build and push the Docker image to Docker Hub
-      - name: Build and push
+      # Step 4: Login to Amazon ECR (Elastic Container Registry)
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      # Step 5: Build and Push Docker image to Amazon ECR
+      - name: Build and push to Amazon ECR
         env:
-          # Define Environment Variable with Docker Hub Repo
-          DOCKERHUB_REPO: kabir021/fragments  # Your Docker Hub repository
-          
-          # Define Environment Variable with the current Git commit SHA
-          SHA_TAG: sha-${{ github.sha }}  # This gets the Git commit SHA using GitHub context
-          
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          ECR_REPO: fragments
+          VERSION_TAG: ${{ github.ref_name }}
         uses: docker/build-push-action@v6
         with:
           push: true
-          # Use 3 tags: commit SHA, main, and latest
-          tags: ${{ env.DOCKERHUB_REPO }}:${{ env.SHA_TAG }}, ${{ env.DOCKERHUB_REPO }}:main, ${{ env.DOCKERHUB_REPO }}:latest
+          tags: ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPO }}:${{ env.VERSION_TAG }}, ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPO }}:latest
+
+      # Step 6: Update ECS Task Definition with the new image
+      - name: Fill in the new image ID in the Amazon ECS task definition
+        id: update-task-def
+        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          ECR_REPO: fragments
+          VERSION_TAG: ${{ github.ref_name }}
+        with:
+          task-definition: fragments-definition.json
+          container-name: fragments
+          image: ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPO }}:${{ env.VERSION_TAG }}
+          environment-variables: |
+            LOG_LEVEL=debug
+            NODE_ENV=production
+            AWS_REGION=us-east-1
+            AWS_COGNITO_POOL_ID=${{ secrets.AWS_COGNITO_POOL_ID }}
+            AWS_COGNITO_CLIENT_ID=${{ secrets.AWS_COGNITO_CLIENT_ID }}
+            API_URL=${{ secrets.API_URL }}
+            AWS_S3_ENDPOINT_URL=${{ secrets.AWS_S3_ENDPOINT_URL }}
+
+      # Step 7: Deploy updated Task Definition to ECS
+      - name: Deploy Amazon ECS task definition
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v2
+        with:
+          task-definition: ${{ steps.update-task-def.outputs.task-definition }}
+          cluster: fragments-cluster
+          service: fragments-service
+          wait-for-service-stability: true
