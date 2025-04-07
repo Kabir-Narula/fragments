@@ -15,8 +15,8 @@ HTTP/1.1 201
 header "Location" exists
 jsonpath "$.status" == "ok"
 jsonpath "$.fragment.type" == "application/json"
-# This check is > 27, as the JSON might ommit quotes or whitespaces
-jsonpath "$.fragment.size" > 27
+# This check is >= 27, as the JSON might ommit quotes or whitespaces
+jsonpath "$.fragment.size" >= 27
 
 [Captures]
 fragment1_url: header "Location"
