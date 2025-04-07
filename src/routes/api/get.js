@@ -15,45 +15,66 @@ module.exports = async (req, res) => {
 
       return res.status(200).json(
         createSuccessResponse({
-          fragments: fragments.map((fragment) => ({
-            id: fragment.id,
-            ownerId: fragment.ownerId,
-            created: fragment.created,
-            updated: fragment.updated,
-            type: fragment.type,
-            size: fragment.size,
-          })),
+          fragments
         })
       );
     }
 
-    // Handle GET /fragments/:id (4.5)
-    if (req.originalUrl.startsWith('/v1/fragments/') && req.params.id) {
-      const fragment = await Fragment.byId(req.user, req.params.id);
-      if (!fragment) {
-        return res.status(404).json(createErrorResponse(404, 'Fragment not found'));
-      }
-
-      const data = await fragment.getData();
-      res.set('Content-Type', fragment.type);
-      return res.status(200).send(data);
-    }
-
     // Handle GET /fragments/:id/info (4.7)
     if (req.originalUrl.startsWith('/v1/fragments/') && req.params.id && req.originalUrl.endsWith('/info')) {
-      const fragment = await Fragment.byId(req.user, req.params.id);
+      logger.debug({ originalUrl: req.originalUrl }, 'Handling GET /info request');
+      let fragment;
+      try {
+        fragment = await Fragment.byId(req.user, req.params.id);
+      }
+      catch (err) {
+        logger.error({ err }, 'Error retrieving fragment by ID. Fragment not found.');
+      }
+      
       if (!fragment) {
         return res.status(404).json(createErrorResponse(404, 'Fragment not found'));
       }
 
       return res.status(200).json(createSuccessResponse({
-        id: fragment.id,
-        ownerId: fragment.ownerId,
-        created: fragment.created,
-        updated: fragment.updated,
-        type: fragment.type,
-        size: fragment.size,
+        fragment: {
+          id: fragment.id,
+          ownerId: fragment.ownerId,
+          created: fragment.created,
+          updated: fragment.updated,
+          type: fragment.type,
+          size: fragment.size,
+        }
       }));
+    }
+
+    // Handle GET /fragments/:id (4.5)
+    if (req.originalUrl.startsWith('/v1/fragments/') && req.params.id) {
+      let fragment;
+      try{
+        fragment = await Fragment.byId(req.user, req.params.id);
+      }
+      catch (err) {
+        logger.error({ err }, 'Error retrieving fragment by ID. Fragment not found.');
+      }
+
+      if (!fragment) {
+        return res.status(404).json(createErrorResponse(404, 'Fragment not found'));
+      }
+
+      let data;
+      try {
+        data = await fragment.getData();
+      }
+      catch (err) {
+        logger.error({ err }, 'Error retrieving fragment data. Fragment not found.');
+      }
+
+      if (!data) {
+        return res.status(404).json(createErrorResponse(404, 'Fragment not found'));
+      }
+
+      res.set('Content-Type', fragment.type);
+      return res.status(200).send(data);
     }
 
     // Handle GET /fragments/:id.ext (4.7.1 - Markdown to HTML conversion)

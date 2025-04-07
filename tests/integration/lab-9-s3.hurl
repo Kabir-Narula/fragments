@@ -5,7 +5,7 @@
 POST http://localhost:8080/v1/fragments
 Content-Type: text/plain
 [BasicAuth]
-user1:password1
+user1@email.com:password1
 `Hello S3!`
 
 HTTP/1.1 201
@@ -18,23 +18,23 @@ url: header "Location"
 # 2. Retrieve created fragment
 GET {{url}}
 [BasicAuth]
-user1:password1
+user1@email.com:password1
 
 HTTP/1.1 200
 [Asserts]
-header "Content-Type" == "text/plain"
+header "Content-Type" == "text/plain; charset=utf-8"
 body == "Hello S3!"
 
 # 3. Delete fragment
 DELETE {{url}}
 [BasicAuth]
-user1:password1
+user1@email.com:password1
 
 HTTP/1.1 200
 
 # 4. Verify deletion
 GET {{url}}
 [BasicAuth]
-user1:password1
+user1@email.com:password1
 
 HTTP/1.1 404

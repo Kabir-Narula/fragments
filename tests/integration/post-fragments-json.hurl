@@ -1,4 +1,3 @@
-# Test posting JSON fragment
 POST http://localhost:8080/v1/fragments
 Content-Type: application/json
 [BasicAuth]

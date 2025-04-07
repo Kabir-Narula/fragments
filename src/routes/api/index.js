@@ -26,5 +26,6 @@ router.post('/fragments', rawBody(), require('./post')); // Handles /fragments P
 router.get('/fragments/:id', require('./get')); // Handles /fragments/:id
 router.get('/fragments/:id/info', require('./get')); // Handles /fragments/:id/info
 router.get('/fragments/:id.:ext', require('./get')); // Handles /fragments/:id.ext (Markdown to HTML conversion)
+router.delete('/fragments/:id', require('./delete')); // Handles /fragments/:id DELETE
 
 module.exports = router;

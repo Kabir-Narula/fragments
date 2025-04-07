@@ -6,7 +6,7 @@ export AWS_SECRET_ACCESS_KEY=test
 export AWS_SESSION_TOKEN=test
 export AWS_DEFAULT_REGION=us-east-1
 
-# Wait for LocalStack
+# Wait for LocalStackdo
 echo "Waiting for LocalStack S3..."
 until curl -s http://localhost:4566/_localstack/health | grep "\"s3\": \"available\""; do
   sleep 5
