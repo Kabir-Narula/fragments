@@ -29,10 +29,10 @@ COPY ./tests/.htpasswd ./tests/.htpasswd
 COPY ./scripts ./scripts
 
 # Make setup script executable and ensure Unix line endings
-RUN apk add --no-cache dos2unix && \
-    dos2unix /app/scripts/local-aws-setup.sh && \
-    chmod +x /app/scripts/local-aws-setup.sh && \
-    apk del dos2unix
+# RUN apk add --no-cache dos2unix && \
+#     dos2unix /app/scripts/local-aws-setup.sh && \
+#     chmod +x /app/scripts/local-aws-setup.sh && \
+#     apk del dos2unix
 
 EXPOSE 8080
 
