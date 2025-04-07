@@ -19,16 +19,12 @@
             "essential": true,
             "environment": [
                 {
-                    "name": "AWS_S3_ENDPOINT_URL",
-                    "value": "http://localhost:4566"
-                },
-                {
                     "name": "AWS_COGNITO_POOL_ID",
                     "value": "us-east-1_NSfakRrX5"
                 },
                 {
                     "name": "API_URL",
-                    "value": "http://localhost:8080"
+                    "value": "http://fragments-lb-1720593080.us-east-1.elb.amazonaws.com"
                 },
                 {
                     "name": "PORT",
