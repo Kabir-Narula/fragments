@@ -1,13 +1,13 @@
-// XXX: temporary use of memory-db until we add DynamoDB
-const MemoryDB = require('../memory/memory-db');
+// // XXX: temporary use of memory-db until we add DynamoDB
+// const MemoryDB = require('../memory/memory-db');
 const s3Client = require('./s3Client');
 const ddbDocClient = require('./ddbDocClient');
 const { PutObjectCommand, GetObjectCommand, DeleteObjectCommand } = require('@aws-sdk/client-s3');
 const { PutCommand, GetCommand, QueryCommand, DeleteCommand } = require('@aws-sdk/lib-dynamodb');
 const logger = require('../../../logger');
 
-// Create in-memory database for fragment metadata
-const metadata = new MemoryDB();
+// // Create in-memory database for fragment metadata
+// const metadata = new MemoryDB();
 
 // Convert stream to Buffer utility function
 const streamToBuffer = (stream) =>
