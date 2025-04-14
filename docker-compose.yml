@@ -13,8 +13,10 @@ services:
       - AWS_S3_BUCKET_NAME=${AWS_S3_BUCKET_NAME:-fragments}
       - AWS_DYNAMODB_TABLE_NAME=${AWS_DYNAMODB_TABLE_NAME:-fragments}
       - AWS_ACCESS_KEY_ID=test  # Added for LocalStack compatibility
-      - AWS_SECRET_ACCESS_KEY=test  # Added for LocalStack compatibility
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY:-test} # Added for LocalStack compatibility
       - AWS_REGION=us-east-1  # Added for AWS SDK
+      - AWS_SESSION_TOKEN=${AWS_SESSION_TOKEN:-test}
+      
     ports:
       - '8080:8080'
     depends_on:
