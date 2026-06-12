@@ -1,13 +1,27 @@
-## Running the Server
+# Fragments API
 
-- **Start the server normally**: `npm start`
-- **Run in development mode (auto-restart)**: `npm run dev`
-- **Run in debug mode (with debugger)**: `npm run debug`
+Back-end API for **BSD Cloud Computing** at Seneca — a microservice for storing and converting text and image fragments.
 
-## Health Check
+## Features
 
-Access the health check route at `http://localhost:8080`:
+- REST API for fragment CRUD
+- Text and image fragment types with conversion
+- JWT authentication
+- Integration and unit tests (Jest, Hurl)
+
+## Stack
+
+Node.js · Express · AWS S3 · Jest
+
+## Run locally
 
 ```bash
-curl -s http://localhost:8080 | jq
+npm install
+cp .env.example .env   # configure AWS and auth secrets
+npm run dev
+npm test
 ```
+
+## Author
+
+Kabir Narula — [GitHub](https://github.com/Kabir-Narula)
